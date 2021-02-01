@@ -7,13 +7,9 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
-
-	"hq-collections.com/cors"
 )
 
-const collectionsPath = "collections"
-
-func handleCollections(w http.ResponseWriter, r *http.Request) {
+func HandleCollections(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 		collectionList := getCollectionsList()
@@ -47,8 +43,10 @@ func handleCollections(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func handleCollection(w http.ResponseWriter, r *http.Request) {
-	urlPathSegments := strings.Split(r.URL.Path, fmt.Sprintf("%s/", collectionsPath))
+func HandleCollection(w http.ResponseWriter, r *http.Request) {
+	// TODO: the `collections` here is the collectionsPath set on routes.go, it is
+	// duplicated. This will be fixed when we start using mux.
+	urlPathSegments := strings.Split(r.URL.Path, fmt.Sprintf("%s/", "collections"))
 	if len(urlPathSegments[1:]) > 1 {
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -103,13 +101,4 @@ func handleCollection(w http.ResponseWriter, r *http.Request) {
 	default:
 		w.WriteHeader(http.StatusMethodNotAllowed)
 	}
-}
-
-// SetupRoutes is a temporary routing method. It must be improved
-// with Mux.
-func SetupRoutes(apiBasePath string) {
-	collectionsHandler := http.HandlerFunc(handleCollections)
-	collectionHandler := http.HandlerFunc(handleCollection)
-	http.Handle(fmt.Sprintf("%s/%s", apiBasePath, collectionsPath), cors.Middleware(collectionsHandler))
-	http.Handle(fmt.Sprintf("%s/%s/", apiBasePath, collectionsPath), cors.Middleware(collectionHandler))
 }
