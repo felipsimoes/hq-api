@@ -1,0 +1,31 @@
+
+[
+  {
+    "id": 1,
+    "collection_id": 1,
+    "name": "Almanacão",
+    "edition": "1",
+    "pages": 39
+  },
+  {
+    "id": 2,
+    "collection_id": 1,
+    "name": "Especial de natal",
+    "edition": "Especial",
+    "pages": 20
+  },
+  {
+    "id": 3,
+    "collection_id": 2,
+    "name": "Asterix em São Paulo",
+    "edition": "2",
+    "pages": 120
+  },
+  {
+    "id": 4,
+    "collection_id": 2,
+    "name": "Asterix en français",
+    "edition": "Francesa",
+    "pages": 2
+  }
+]
