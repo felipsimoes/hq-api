@@ -7,13 +7,9 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
-
-	"hq-collections.com/cors"
 )
 
-const volumesPath = "volumes"
-
-func handleVolumes(w http.ResponseWriter, r *http.Request) {
+func HandleVolumes(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 		volumeList := getVolumesList()
@@ -47,8 +43,10 @@ func handleVolumes(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func handleVolume(w http.ResponseWriter, r *http.Request) {
-	urlPathSegments := strings.Split(r.URL.Path, fmt.Sprintf("%s/", volumesPath))
+func HandleVolume(w http.ResponseWriter, r *http.Request) {
+	// TODO: the `volumes` here is the volumesPath set on routes.go, it is
+	// duplicated. This will be fixed when we start using mux.
+	urlPathSegments := strings.Split(r.URL.Path, fmt.Sprintf("%s/", "volumes"))
 	if len(urlPathSegments[1:]) > 1 {
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -103,13 +101,4 @@ func handleVolume(w http.ResponseWriter, r *http.Request) {
 	default:
 		w.WriteHeader(http.StatusMethodNotAllowed)
 	}
-}
-
-// SetupRoutes is a temporary routing method. It must be improved
-// with Mux.
-func SetupRoutes(apiBasePath string) {
-	volumesHandler := http.HandlerFunc(handleVolumes)
-	volumeHandler := http.HandlerFunc(handleVolume)
-	http.Handle(fmt.Sprintf("%s/%s", apiBasePath, volumesPath), cors.Middleware(volumesHandler))
-	http.Handle(fmt.Sprintf("%s/%s/", apiBasePath, volumesPath), cors.Middleware(volumeHandler))
 }
