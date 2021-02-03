@@ -10,7 +10,7 @@ const basePath = "/api"
 
 func main() {
 	SetupRoutes(basePath)
-	fmt.Println("Webserver is up and running, waiting for connections...")
+	fmt.Println("\nWebserver is up and running on port 5000, waiting for connections...")
 	err := http.ListenAndServe(":5000", nil)
 	if err != nil {
 		log.Fatal(err)

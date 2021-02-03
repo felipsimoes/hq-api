@@ -2,11 +2,11 @@ package volume
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"strconv"
-	"strings"
+
+	"github.com/gorilla/mux"
 )
 
 func HandleVolumes(w http.ResponseWriter, r *http.Request) {
@@ -44,14 +44,13 @@ func HandleVolumes(w http.ResponseWriter, r *http.Request) {
 }
 
 func HandleVolume(w http.ResponseWriter, r *http.Request) {
-	// TODO: the `volumes` here is the volumesPath set on routes.go, it is
-	// duplicated. This will be fixed when we start using mux.
-	urlPathSegments := strings.Split(r.URL.Path, fmt.Sprintf("%s/", "volumes"))
-	if len(urlPathSegments[1:]) > 1 {
+	params := mux.Vars(r)
+	if params["id"] == "" {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	volumeID, err := strconv.Atoi(urlPathSegments[len(urlPathSegments)-1])
+
+	volumeID, err := strconv.Atoi(params["id"])
 	if err != nil {
 		log.Print(err)
 		w.WriteHeader(http.StatusNotFound)
