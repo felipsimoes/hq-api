@@ -14,7 +14,7 @@ import (
 // volumes without having to iterate over all the items in the
 // slice. The value is the volume itself.
 //
-// We use mutex because our webserice is multi-threaded and maps
+// We use mutex because our webservice is multi-threaded and maps
 // in Golang are not naturally thread-safe, which means we need to wrap
 // our map in a mutex to avoid two threads from writing and reading
 // the `map` at the same time.
