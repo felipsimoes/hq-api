@@ -30,6 +30,8 @@ func SetupRoutes(apiBasePath string) {
 	apiRouter.HandleFunc("/volumes/{id}", volumeHandler)
 	apiRouter.HandleFunc("/volumes", volumesHandler)
 
+	http.Handle("/", router)
+
 	fmt.Print("Available routes:\n\n")
 	router.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
 		tpl, _ := route.GetPathTemplate()
