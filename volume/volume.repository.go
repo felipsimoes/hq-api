@@ -24,13 +24,13 @@ var volumesMap = struct {
 }{m: make(map[int]Volume)}
 
 func init() {
-	fmt.Println("loading volumes...")
+	fmt.Print("loading volumes...")
 	volumeMap, err := loadVolumesMap()
 	volumesMap.m = volumeMap
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println("%d volumes loaded...\n", len(volumesMap.m))
+	fmt.Printf("%d volumes loaded\n\n", len(volumesMap.m))
 }
 
 func loadVolumesMap() (map[int]Volume, error) {

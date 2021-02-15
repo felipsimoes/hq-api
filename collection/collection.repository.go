@@ -24,13 +24,13 @@ var collectionsMap = struct {
 }{m: make(map[int]Collection)}
 
 func init() {
-	fmt.Println("loading collections...")
+	fmt.Print("loading collections...")
 	collectionMap, err := loadCollectionsMap()
 	collectionsMap.m = collectionMap
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println("%d collections loaded...\n", len(collectionsMap.m))
+	fmt.Printf("%d collections loaded\n", len(collectionsMap.m))
 }
 
 func loadCollectionsMap() (map[int]Collection, error) {
