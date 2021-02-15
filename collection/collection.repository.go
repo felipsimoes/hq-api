@@ -8,6 +8,8 @@ import (
 	"os"
 	"sort"
 	"sync"
+
+	"hq-collections.com/volume"
 )
 
 // collectionID is the key for the map, allowing us to access
@@ -117,4 +119,17 @@ func addOrUpdateCollection(collection Collection) (int, error) {
 	collectionsMap.m[addOrUpdateID] = collection
 	collectionsMap.Unlock()
 	return addOrUpdateID, nil
+}
+
+func (collection Collection) getCollectionVolumes() []volume.Volume {
+	volume.VolumesMap.RLock()
+	// collections := make([]Collection, 0, len(collectionsMap.m))
+	volumes := []volume.Volume{}
+	for _, value := range volume.Volumes() {
+		if value.CollectionID == collection.ID {
+			volumes = append(volumes, value)
+		}
+	}
+	volume.VolumesMap.RUnlock()
+	return volumes
 }

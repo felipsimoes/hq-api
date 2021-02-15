@@ -10,6 +10,7 @@ import (
 	"sync"
 )
 
+// VolumesMap stores the data for the volumes.
 // volumeID is the key for the map, allowing us to access
 // volumes without having to iterate over all the items in the
 // slice. The value is the volume itself.
@@ -18,7 +19,7 @@ import (
 // in Golang are not naturally thread-safe, which means we need to wrap
 // our map in a mutex to avoid two threads from writing and reading
 // the `map` at the same time.
-var volumesMap = struct {
+var VolumesMap = struct {
 	sync.RWMutex
 	m map[int]Volume
 }{m: make(map[int]Volume)}
@@ -26,11 +27,15 @@ var volumesMap = struct {
 func init() {
 	fmt.Print("loading volumes...")
 	volumeMap, err := loadVolumesMap()
-	volumesMap.m = volumeMap
+	VolumesMap.m = volumeMap
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Printf("%d volumes loaded\n\n", len(volumesMap.m))
+	fmt.Printf("%d volumes loaded\n\n", len(VolumesMap.m))
+}
+
+func Volumes() []Volume {
+	return getVolumesList()
 }
 
 func loadVolumesMap() (map[int]Volume, error) {
@@ -48,19 +53,19 @@ func loadVolumesMap() (map[int]Volume, error) {
 		log.Fatal(err)
 	}
 
-	volumesMap := make(map[int]Volume)
+	VolumesMap := make(map[int]Volume)
 	for i := 0; i < len(volumeList); i++ {
-		volumesMap[volumeList[i].ID] = volumeList[i]
+		VolumesMap[volumeList[i].ID] = volumeList[i]
 	}
 
-	return volumesMap, nil
+	return VolumesMap, nil
 }
 
 func getVolume(volumeID int) *Volume {
-	volumesMap.RLock()
-	defer volumesMap.RUnlock()
+	VolumesMap.RLock()
+	defer VolumesMap.RUnlock()
 
-	if volume, ok := volumesMap.m[volumeID]; ok {
+	if volume, ok := VolumesMap.m[volumeID]; ok {
 		return &volume
 	}
 
@@ -68,28 +73,28 @@ func getVolume(volumeID int) *Volume {
 }
 
 func removeVolume(volumeID int) {
-	volumesMap.Lock()
-	defer volumesMap.Unlock()
-	delete(volumesMap.m, volumeID)
+	VolumesMap.Lock()
+	defer VolumesMap.Unlock()
+	delete(VolumesMap.m, volumeID)
 }
 
 func getVolumesList() []Volume {
-	volumesMap.RLock()
-	volumes := make([]Volume, 0, len(volumesMap.m))
-	for _, value := range volumesMap.m {
+	VolumesMap.RLock()
+	volumes := make([]Volume, 0, len(VolumesMap.m))
+	for _, value := range VolumesMap.m {
 		volumes = append(volumes, value)
 	}
-	volumesMap.RUnlock()
+	VolumesMap.RUnlock()
 	return volumes
 }
 
 func getVolumesIDs() []int {
-	volumesMap.RLock()
+	VolumesMap.RLock()
 	volumesIDs := []int{}
-	for key := range volumesMap.m {
+	for key := range VolumesMap.m {
 		volumesIDs = append(volumesIDs, key)
 	}
-	volumesMap.RUnlock()
+	VolumesMap.RUnlock()
 	sort.Ints(volumesIDs)
 	return volumesIDs
 }
@@ -113,8 +118,8 @@ func addOrUpdateVolume(volume Volume) (int, error) {
 		addOrUpdateID = getNextVolumeID()
 		volume.ID = addOrUpdateID
 	}
-	volumesMap.Lock()
-	volumesMap.m[addOrUpdateID] = volume
-	volumesMap.Unlock()
+	VolumesMap.Lock()
+	VolumesMap.m[addOrUpdateID] = volume
+	VolumesMap.Unlock()
 	return addOrUpdateID, nil
 }
