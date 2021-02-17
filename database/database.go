@@ -26,8 +26,6 @@ func Setup() *gorm.DB {
 
 	DB = db
 
-	// databasePing(db)
-
 	return db
 }
 
@@ -42,12 +40,3 @@ func connectionString() string {
 
 	return fmt.Sprintf("host=%v port=%v user=%v dbname=%v password=%v sslmode=disable", dbHost, dbPort, userName, dbName, password)
 }
-
-// func databasePing(db *gorm.DB) {
-// 	err := postgres.Ping()
-// 	if err != nil {
-// 		panic(err.Error())
-// 	}
-
-// 	fmt.Println("Connection to the database succeeded")
-// }
