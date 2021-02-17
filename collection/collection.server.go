@@ -8,6 +8,7 @@ import (
 	"strconv"
 
 	"github.com/gorilla/mux"
+	"hq-collections.com/volume"
 )
 
 func HandleCollections(w http.ResponseWriter, r *http.Request) {
@@ -114,29 +115,31 @@ func HandleCollectionVolumes(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	// collectionID, err := strconv.Atoi(params["id"])
-	// if err != nil {
-	// 	log.Print(err)
-	// 	w.WriteHeader(http.StatusNotFound)
-	// 	return
-	// }
+	collectionID, err := strconv.Atoi(params["id"])
+	if err != nil {
+		log.Print(err)
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
 	switch r.Method {
 	case http.MethodGet:
-		// collection := getCollection(collectionID)
-		// if collection == nil {
-		// 	w.WriteHeader(http.StatusNotFound)
-		// 	return
-		// }
-		// j, err := json.Marshal(collection.getCollectionVolumes())
-		// if err != nil {
-		// 	log.Print(err)
-		// 	w.WriteHeader(http.StatusBadRequest)
-		// 	return
-		// }
-		// _, err = w.Write(j)
-		// if err != nil {
-		// 	log.Fatal(err)
-		// }
+		_, err := GetCollection(collectionID)
+		if err != nil {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+
+		volumes := volume.FindCollectionVolumes(collectionID)
+		j, err := json.Marshal(volumes)
+		if err != nil {
+			log.Print(err)
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		_, err = w.Write(j)
+		if err != nil {
+			log.Fatal(err)
+		}
 	case http.MethodOptions:
 		return
 	default:

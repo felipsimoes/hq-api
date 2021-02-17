@@ -15,7 +15,7 @@ import (
 func SetupRoutes(apiBasePath string) {
 	collectionsHandler := http.HandlerFunc(collection.HandleCollections)
 	collectionHandler := http.HandlerFunc(collection.HandleCollection)
-	// collectionVolumesHandler := http.HandlerFunc(collection.HandleCollectionVolumes)
+	collectionVolumesHandler := http.HandlerFunc(collection.HandleCollectionVolumes)
 	volumesHandler := http.HandlerFunc(volume.HandleVolumes)
 	volumeHandler := http.HandlerFunc(volume.HandleVolume)
 
@@ -26,7 +26,7 @@ func SetupRoutes(apiBasePath string) {
 		Subrouter()
 
 	apiRouter.HandleFunc("/collections/{id}", collectionHandler)
-	// apiRouter.HandleFunc("/collections/{id}/volumes", collectionVolumesHandler)
+	apiRouter.HandleFunc("/collections/{id}/volumes", collectionVolumesHandler)
 	apiRouter.HandleFunc("/collections", collectionsHandler)
 
 	apiRouter.HandleFunc("/volumes/{id}", volumeHandler)

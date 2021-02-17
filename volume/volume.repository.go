@@ -40,6 +40,12 @@ func FindAllVolumes() []Volume {
 	return volumeList
 }
 
+func FindCollectionVolumes(collectionID int) []Volume {
+	var volumes []Volume
+	database.DB.Where("collection_id = ?", collectionID).Find(&volumes)
+	return volumes
+}
+
 // GetVolume finds a volume in the database
 // given its ID. This method returns and error if
 // the volume is not found.
