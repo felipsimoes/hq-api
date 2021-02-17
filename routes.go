@@ -6,6 +6,7 @@ import (
 
 	"hq-collections.com/collection"
 	"hq-collections.com/cors"
+	"hq-collections.com/volume"
 
 	"github.com/gorilla/mux"
 )
@@ -15,8 +16,8 @@ func SetupRoutes(apiBasePath string) {
 	collectionsHandler := http.HandlerFunc(collection.HandleCollections)
 	collectionHandler := http.HandlerFunc(collection.HandleCollection)
 	// collectionVolumesHandler := http.HandlerFunc(collection.HandleCollectionVolumes)
-	// volumesHandler := http.HandlerFunc(volume.HandleVolumes)
-	// volumeHandler := http.HandlerFunc(volume.HandleVolume)
+	volumesHandler := http.HandlerFunc(volume.HandleVolumes)
+	volumeHandler := http.HandlerFunc(volume.HandleVolume)
 
 	router := mux.NewRouter()
 	router.Use(cors.Middleware)
@@ -28,8 +29,8 @@ func SetupRoutes(apiBasePath string) {
 	// apiRouter.HandleFunc("/collections/{id}/volumes", collectionVolumesHandler)
 	apiRouter.HandleFunc("/collections", collectionsHandler)
 
-	// apiRouter.HandleFunc("/volumes/{id}", volumeHandler)
-	// apiRouter.HandleFunc("/volumes", volumesHandler)
+	apiRouter.HandleFunc("/volumes/{id}", volumeHandler)
+	apiRouter.HandleFunc("/volumes", volumesHandler)
 
 	http.Handle("/", router)
 
