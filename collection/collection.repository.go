@@ -1,123 +1,54 @@
 package collection
 
-// collectionID is the key for the map, allowing us to access
-// collections without having to iterate over all the items in the
-// slice. The value is the collection itself.
-//
-// We use mutex because our webservice is multi-threaded and maps
-// in Golang are not naturally thread-safe, which means we need to wrap
-// our map in a mutex to avoid two threads from writing and reading
-// the `map` at the same time.
-// var collectionsMap = struct {
-// 	sync.RWMutex
-// 	m map[int]Collection
-// }{m: make(map[int]Collection)}
+import (
+	"errors"
 
-// func init() {
-// 	fmt.Print("loading collections...")
-// 	collectionMap, err := loadCollectionsMap()
-// 	collectionsMap.m = collectionMap
-// 	if err != nil {
-// 		log.Fatal(err)
-// 	}
-// 	fmt.Printf("%d collections loaded\n", len(collectionsMap.m))
-// }
+	"gorm.io/gorm"
+	"hq-collections.com/database"
+)
 
-// func loadCollectionsMap() (map[int]Collection, error) {
-// 	fileName := "data/collections.json"
-// 	_, err := os.Stat(fileName)
-// 	if os.IsNotExist(err) {
-// 		return nil, fmt.Errorf("file [%s] does not exist", fileName)
-// 	}
+// Destroy removes the collection from the database
+// It always return true because Postgresql does
+// not return an error when the delete command
+// fails.
+func (collection Collection) Destroy() bool {
+	database.DB.Delete(&collection)
+	return true
+}
 
-// 	file, _ := ioutil.ReadFile(fileName)
-// 	collectionList := make([]Collection, 0)
-// 	err = json.Unmarshal([]byte(file), &collectionList)
+// Save the collection in the database. If the
+// collection has an ID, it will be updated.
+// Otherwise, it will be created.
+// It returns true if the operation succeeds,
+// of false if it does not.
+func (collection Collection) Save() bool {
+	var err error
+	if collection.ID > 0 {
+		err = database.DB.Create(&collection).Error
+	} else {
+		err = database.DB.Save(&collection).Error
+	}
 
-// 	if err != nil {
-// 		log.Fatal(err)
-// 	}
+	return err == nil
+}
 
-// 	collectionMap := make(map[int]Collection)
-// 	for i := 0; i < len(collectionList); i++ {
-// 		collectionMap[collectionList[i].ID] = collectionList[i]
-// 	}
+// FindAllCollections returns a list with
+// all collections in the database.
+func FindAllCollections() []Collection {
+	var collectionList []Collection
+	database.DB.Find(&collectionList)
+	return collectionList
+}
 
-// 	return collectionMap, nil
-// }
+// GetCollection finds a collection in the database
+// given its ID. This method returns and error if
+// the collection is not found.
+func GetCollection(collectionID int) (*Collection, error) {
+	var collection Collection
+	err := database.DB.First(&collection, collectionID).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, gorm.ErrRecordNotFound
+	}
 
-// func getCollection(collectionID int) *Collection {
-// 	collectionsMap.RLock()
-// 	defer collectionsMap.RUnlock()
-
-// 	if collection, ok := collectionsMap.m[collectionID]; ok {
-// 		return &collection
-// 	}
-
-// 	return nil
-// }
-
-// func removeCollection(collectionID int) {
-// 	collectionsMap.Lock()
-// 	defer collectionsMap.Unlock()
-// 	delete(collectionsMap.m, collectionID)
-// }
-
-// func getCollectionsList() []Collection {
-// 	collectionsMap.RLock()
-// 	collections := make([]Collection, 0, len(collectionsMap.m))
-// 	for _, value := range collectionsMap.m {
-// 		collections = append(collections, value)
-// 	}
-// 	collectionsMap.RUnlock()
-// 	return collections
-// }
-
-// func getCollectionsIDs() []int {
-// 	collectionsMap.RLock()
-// 	collectionsIDs := []int{}
-// 	for key := range collectionsMap.m {
-// 		collectionsIDs = append(collectionsIDs, key)
-// 	}
-// 	collectionsMap.RUnlock()
-// 	sort.Ints(collectionsIDs)
-// 	return collectionsIDs
-// }
-
-// func getNextCollectionID() int {
-// 	collectionIDs := getCollectionsIDs()
-// 	return collectionIDs[len(collectionIDs)-1] + 1
-// }
-
-// func addOrUpdateCollection(collection Collection) (int, error) {
-// 	// if the collection id is set, update, otherwise add
-// 	addOrUpdateID := -1
-// 	if collection.ID > 0 {
-// 		oldCollection := getCollection(collection.ID)
-// 		// if it exists, replace it, otherwise return error
-// 		if oldCollection == nil {
-// 			return 0, fmt.Errorf("collection id [%d] doesn't exist", collection.ID)
-// 		}
-// 		addOrUpdateID = collection.ID
-// 	} else {
-// 		addOrUpdateID = getNextCollectionID()
-// 		collection.ID = addOrUpdateID
-// 	}
-// 	collectionsMap.Lock()
-// 	collectionsMap.m[addOrUpdateID] = collection
-// 	collectionsMap.Unlock()
-// 	return addOrUpdateID, nil
-// }
-
-// func (collection Collection) getCollectionVolumes() []volume.Volume {
-// 	volume.VolumesMap.RLock()
-// 	// collections := make([]Collection, 0, len(collectionsMap.m))
-// 	volumes := []volume.Volume{}
-// 	for _, value := range volume.Volumes() {
-// 		if value.CollectionID == collection.ID {
-// 			volumes = append(volumes, value)
-// 		}
-// 	}
-// 	volume.VolumesMap.RUnlock()
-// 	return volumes
-// }
+	return &collection, nil
+}

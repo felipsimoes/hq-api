@@ -6,12 +6,19 @@ import (
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 var DB *gorm.DB
 
 func Setup() *gorm.DB {
-	db, err := gorm.Open(postgres.Open(connectionString()), &gorm.Config{})
+	logLevel := logger.Error
+	if os.Getenv("debug") != "" {
+		logLevel = logger.Info
+	}
+	db, err := gorm.Open(postgres.Open(connectionString()), &gorm.Config{
+		Logger: logger.Default.LogMode(logLevel),
+	})
 	if err != nil {
 		panic(err.Error())
 	}
