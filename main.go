@@ -1,30 +1,21 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
-
 	"os"
 
-	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 	"github.com/joho/godotenv"
+	"gorm.io/gorm"
+	"hq-collections.com/collection"
+	"hq-collections.com/database"
 )
 
 const basePath = "/api"
-
-func connectionString() string {
-	userName := os.Getenv("db_user")
-	password := os.Getenv("db_pass")
-	dbName := os.Getenv("db_name")
-	dbHost := os.Getenv("db_host")
-	dbPort := os.Getenv("db_port")
-
-	fmt.Println(userName, password, dbName, dbHost)
-
-	return fmt.Sprintf("host=%v port=%v user=%v dbname=%v password=%v sslmode=disable", dbHost, dbPort, userName, dbName, password)
-}
 
 func main() {
 	e := godotenv.Load() //Load .env file
@@ -32,25 +23,48 @@ func main() {
 		fmt.Print(e)
 	}
 
-	db, err := gorm.Open("postgres", connectionString())
-	if err != nil {
-		panic(err.Error())
-	}
-	defer db.Close()
-
-	database := db.DB()
-
-	err = database.Ping()
-	if err != nil {
-		panic(err.Error())
-	}
-
-	fmt.Println("Connection to the database succeeded")
+	db := database.Setup()
+	migrateAndSeed(db)
 
 	SetupRoutes(basePath)
 	fmt.Println("\nWebserver is up and running on port 5000, waiting for connections...")
-	err = http.ListenAndServe(":5000", nil)
+	err := http.ListenAndServe(":5000", nil)
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func seed(db *gorm.DB) {
+	seedCollections(*db)
+}
+
+func seedCollections(db gorm.DB) {
+	db.Exec("DELETE FROM collections")
+
+	fmt.Print("Seeding collections... ")
+	fileName := "data/collections.json"
+	_, err := os.Stat(fileName)
+	if os.IsNotExist(err) {
+		log.Fatal(err)
+	}
+
+	file, _ := ioutil.ReadFile(fileName)
+	collectionList := make([]collection.Collection, 0)
+	err = json.Unmarshal([]byte(file), &collectionList)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for i := 0; i < len(collectionList); i++ {
+		db.Create(&collectionList[i])
+	}
+
+	fmt.Println("done.")
+}
+
+func migrateAndSeed(db *gorm.DB) {
+	fmt.Println("Migrating...")
+	db.AutoMigrate(&collection.Collection{})
+	seed(db)
 }
