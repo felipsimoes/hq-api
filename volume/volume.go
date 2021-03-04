@@ -1,8 +1,10 @@
 package volume
 
+import "gorm.io/gorm"
+
 // Volume is a struct that represents one HQ
 type Volume struct {
-	ID           int    `json:"id"`
+	gorm.Model
 	CollectionID int    `json:"collection_id"`
 	Name         string `json:"name"`
 	Edition      string `json:"edition"`
